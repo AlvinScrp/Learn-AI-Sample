@@ -13,22 +13,25 @@
 ## 安装步骤
 
 1. **安装依赖**
+
    ```bash
    npm install
    ```
+2. **配置环境变量
 
-2. **配置环境变量**
+   到阿里云百炼领取apikey https://bailian.console.aliyun.com/?tab=model#/api-key**
+
    ```bash
-   # 复制环境变量示例文件
-   cp env.example .env
-   
+
    # 编辑.env文件，添加你的OpenAI API密钥
-   # OPENAI_API_KEY=your_openai_api_key_here
-   ```
+   DASHSCOPE_API_KEY=sk-......
+   DASHSCOPE_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 
+   ```
 3. **运行应用**
+
    ```bash
-   npm start
+   直接运行对应的demojs文件
    ```
 
 ## 使用方法
@@ -45,7 +48,7 @@
 Learn-AI-Sample/
 ├── index.js          # 主应用文件
 ├── package.json      # 项目配置
-├── env.example       # 环境变量示例
+├── .env       # 环境变量示例
 └── README.md         # 项目说明
 ```
 
@@ -53,19 +56,11 @@ Learn-AI-Sample/
 
 ### 环境变量
 
-- `OPENAI_API_KEY`: OpenAI API密钥（必需）
-- `OPENAI_MODEL`: 使用的模型名称（可选，默认为gpt-3.5-turbo）
 
 ### 依赖包
 
 - `openai`: OpenAI官方SDK
 - `dotenv`: 环境变量管理
-
-## 开发说明
-
-- 所有函数都添加了详细的JSDoc注释
-- 包含完整的错误处理机制
-- 支持模块化导入，便于扩展
 
 ## 注意事项
 
