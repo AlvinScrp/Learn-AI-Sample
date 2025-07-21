@@ -1,0 +1,21 @@
+{
+  "name": "learn-ai-sample",
+  "version": "1.0.0",
+  "description": "Node.js应用集成OpenAI SDK示例",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "keywords": ["openai", "ai", "chat", "nodejs"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "openai": "^4.20.1",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+} 
