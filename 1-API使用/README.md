@@ -1,16 +1,6 @@
-# Learn AI Sample - OpenAI聊天应用
+# Learn AI Sample -
 
-这是一个集成了OpenAI SDK的Node.js应用示例，用于测试OpenAI的文本聊天功能。
-
-## 功能特性
-
-- ✅ 集成OpenAI SDK
-- ✅ 文本聊天功能
-- ✅ 环境变量配置
-- ✅ 错误处理
-- ✅ 中文对话支持
-
-## 安装步骤
+安装步骤
 
 1. **安装依赖**
 
@@ -55,7 +45,6 @@ Learn-AI-Sample/
 ## 配置说明
 
 ### 环境变量
-
 
 ### 依赖包
 
