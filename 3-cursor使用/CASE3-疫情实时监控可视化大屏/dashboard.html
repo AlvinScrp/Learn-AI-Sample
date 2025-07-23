@@ -108,6 +108,14 @@
             padding: 15px;
             margin-bottom: 20px;
             position: relative;
+            backdrop-filter: blur(5px);
+        }
+        
+        /* 地图图表特殊样式 */
+        #geo-distribution {
+            background: radial-gradient(ellipse at center, rgba(30, 58, 74, 0.8) 0%, rgba(15, 28, 60, 0.9) 100%);
+            border-radius: 5px;
+            border: 1px solid rgba(44, 95, 122, 0.5);
         }
         
         .chart-title {
@@ -206,7 +214,12 @@
             
             <!-- 地理分布图 -->
             <div class="chart-wrapper chart-half-width">
-                <div class="chart-title">香港各区疫情分布 <span>单位: 人</span></div>
+                <div class="chart-title">
+                    🗺️ 香港各区疫情分布地图 
+                    <span style="font-size: 10px; opacity: 0.8;">
+                        支持缩放平移 | 鼠标悬停查看详情
+                    </span>
+                </div>
                 <div id="geo-distribution" class="chart"></div>
             </div>
             
@@ -260,23 +273,32 @@
                 }
             };
             
-            // 初始化每日新增与累计确诊趋势图
+            // 其它图表可以直接初始化
             initDailyTrendChart(mockData);
-            
-            // 初始化地理分布图
-            initGeoDistributionChart(mockData);
-            
-            // 初始化增长率变化趋势图
             initGrowthRateChart(mockData);
-            
-            // 初始化各区域确诊排名图
             initDistrictRankingChart(mockData);
-            
-            // 初始化年龄分布图
             initAgeDistributionChart(mockData);
-            
-            // 初始化医疗资源使用情况图
             initMedicalResourcesChart(mockData);
+            
+            // 地图必须等GeoJSON注册好再初始化
+            window.addEventListener('hk-map-ready', function() {
+                console.log('🗺️ 接收到地图就绪事件，开始初始化地图...');
+                initGeoDistributionChart(mockData);
+                console.log('🗺️ 地图初始化完成');
+            });
+            
+            // 监听地图加载错误事件
+            window.addEventListener('hk-map-error', function(event) {
+                console.error('❌ 地图加载失败:', event.detail);
+                alert('地图数据加载失败，请检查810000_full.json文件是否存在');
+            });
+            
+            // 添加超时机制，如果5秒内地图没有加载成功，显示提示
+            setTimeout(function() {
+                if (!window.mapLoaded) {
+                    console.warn('⚠️ 地图加载超时，请检查网络连接或810000_full.json文件');
+                }
+            }, 5000);
         });
         
         // 每日新增与累计确诊趋势图
@@ -436,56 +458,183 @@
                 }
             });
             
-            // 计算最大值用于视觉映射
-            const maxValue = Math.max(...data.districtData);
+            // 为没有数据的区域添加默认值
+            Object.keys(districtMap).forEach(district => {
+                if (!mapData.find(item => item.name === district)) {
+                    mapData.push({
+                        name: district,
+                        value: 0
+                    });
+                }
+            });
             
-            // 香港地图配置
+            // 计算最大值用于视觉映射
+            const maxValue = Math.max(...data.districtData, 1);
+            
+            // 香港地图配置 - 参考百度地图风格
             const option = {
+                backgroundColor: 'transparent',
                 tooltip: {
                     trigger: 'item',
-                    formatter: '{b}<br/>确诊人数: {c}人'
+                    formatter: function(params) {
+                        return `<div style="padding: 8px; background: rgba(0,0,0,0.8); border-radius: 4px; color: #fff; font-size: 12px;">
+                                    <div style="font-weight: bold; margin-bottom: 4px;">${params.name}</div>
+                                    <div>确诊人数: <span style="color: #ff6b6b;">${params.value || 0}</span> 人</div>
+                                </div>`;
+                    },
+                    backgroundColor: 'transparent',
+                    borderWidth: 0
                 },
                 visualMap: {
                     min: 0,
                     max: maxValue,
-                    left: 'right',
-                    top: 'bottom',
-                    text: ['高', '低'],
-                    calculable: true,
+                    left: 15,
+                    bottom: 20,
+                    text: ['高风险', '低风险'],
+                    calculable: false,
                     inRange: {
-                        color: ['#50a3ba', '#eac736', '#d94e5d']
+                        color: [
+                            '#313695',    // 深蓝色 - 无确诊
+                            '#4575b4',    // 蓝色 - 低确诊
+                            '#74add1',    // 浅蓝色
+                            '#abd9e9',    // 很浅蓝色
+                            '#e0f3f8',    // 白色 - 中等
+                            '#fee090',    // 浅黄色
+                            '#fdae61',    // 橙色
+                            '#f46d43',    // 橙红色
+                            '#d73027',    // 红色
+                            '#a50026'     // 深红色 - 高确诊
+                        ]
                     },
                     textStyle: {
-                        color: '#fff'
+                        color: '#fff',
+                        fontSize: 11
+                    },
+                    itemWidth: 12,
+                    itemHeight: 80
+                },
+                geo: {
+                    map: 'HK',
+                    roam: true,
+                    zoom: 1.3,
+                    center: [114.15, 22.35],
+                    aspectScale: 1,
+                    itemStyle: {
+                        areaColor: '#1e3a4a',
+                        borderColor: '#2c5f7a',
+                        borderWidth: 1,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)',
+                        shadowBlur: 10,
+                        shadowOffsetX: 2,
+                        shadowOffsetY: 2
+                    },
+                    emphasis: {
+                        itemStyle: {
+                            areaColor: '#2c5f7a'
+                        }
                     }
                 },
                 series: [
+                    // 背景地图层
+                    {
+                        type: 'map',
+                        map: 'HK',
+                        geoIndex: 0,
+                        aspectScale: 1,
+                        roam: false,
+                        zoom: 1.3,
+                        center: [114.15, 22.35],
+                        silent: true,
+                        itemStyle: {
+                            areaColor: '#1e3a4a',
+                            borderColor: '#2c5f7a',
+                            borderWidth: 1
+                        },
+                        data: Object.keys(districtMap).map(name => ({
+                            name: name,
+                            value: 0,
+                            itemStyle: {
+                                areaColor: '#1e3a4a'
+                            }
+                        }))
+                    },
+                    // 数据展示层
                     {
                         name: '香港各区确诊人数',
                         type: 'map',
                         map: 'HK',
-                        roam: true, // 允许缩放和平移
-                        zoom: 1.2, // 放大一点
-                        center: [114.15, 22.35], // 中心点
+                        aspectScale: 1,
+                        roam: true,
+                        zoom: 1.3,
+                        center: [114.15, 22.35],
                         emphasis: {
                             label: {
                                 show: true,
-                                color: '#fff'
+                                color: '#fff',
+                                fontSize: 12,
+                                fontWeight: 'bold',
+                                textShadowColor: 'rgba(0, 0, 0, 0.8)',
+                                textShadowBlur: 4
                             },
                             itemStyle: {
-                                areaColor: '#ffd04b'
+                                areaColor: '#ffd04b',
+                                borderColor: '#fff',
+                                borderWidth: 2,
+                                shadowColor: 'rgba(255, 208, 75, 0.8)',
+                                shadowBlur: 15,
+                                shadowOffsetX: 0,
+                                shadowOffsetY: 0
+                            }
+                        },
+                        select: {
+                            itemStyle: {
+                                areaColor: '#ff6b6b'
                             }
                         },
                         data: mapData,
                         itemStyle: {
-                            borderColor: 'rgba(255, 255, 255, 0.5)',
-                            borderWidth: 1
+                            borderColor: 'rgba(255, 255, 255, 0.8)',
+                            borderWidth: 1.5,
+                            shadowColor: 'rgba(0, 0, 0, 0.3)',
+                            shadowBlur: 8,
+                            shadowOffsetX: 2,
+                            shadowOffsetY: 2
                         },
                         label: {
                             show: true,
                             color: '#fff',
-                            fontSize: 10
+                            fontSize: 10,
+                            fontWeight: 'bold',
+                            textShadowColor: 'rgba(0, 0, 0, 0.8)',
+                            textShadowBlur: 3,
+                            formatter: function(params) {
+                                return params.name.replace('区', '');
+                            }
                         }
+                    },
+                    // 海域背景效果
+                    {
+                        name: '海域',
+                        type: 'effectScatter',
+                        coordinateSystem: 'geo',
+                        data: [
+                            [113.85, 22.15, 1],
+                            [114.45, 22.25, 1],
+                            [114.25, 22.55, 1]
+                        ],
+                        symbolSize: function(val) {
+                            return 4;
+                        },
+                        itemStyle: {
+                            color: 'rgba(70, 130, 180, 0.6)'
+                        },
+                        rippleEffect: {
+                            brushType: 'stroke',
+                            color: 'rgba(70, 130, 180, 0.3)',
+                            scale: 1.5,
+                            period: 4
+                        },
+                        silent: true
                     }
                 ]
             };
@@ -495,6 +644,13 @@
             // 响应窗口大小变化
             window.addEventListener('resize', function() {
                 myChart.resize();
+            });
+            
+            // 添加点击事件
+            myChart.on('click', function(params) {
+                if (params.componentType === 'series' && params.seriesIndex === 1) {
+                    console.log('点击了区域:', params.name, '确诊人数:', params.value);
+                }
             });
         }
         
