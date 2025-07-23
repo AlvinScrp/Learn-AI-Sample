@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>香港疫情实时监控大屏</title>
+    <!-- 引入ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <!-- 引入香港地图数据 -->
+    <script src="hongkong-geo.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+            background-color: #0f1c3c;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* 顶部标题和数据指标 */
+        .header {
+            height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .title {
+            font-size: 32px;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(0, 199, 255, 0.5);
+            margin-bottom: 15px;
+        }
+        
+        .data-overview {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+        }
+        
+        .data-item {
+            background: rgba(6, 30, 93, 0.5);
+            border: 1px solid rgba(0, 199, 255, 0.3);
+            border-radius: 5px;
+            padding: 10px 20px;
+            text-align: center;
+            width: 18%;
+        }
+        
+        .data-item-title {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .data-item-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .confirmed {
+            color: #ff6a84;
+        }
+        
+        .cured {
+            color: #4cd964;
+        }
+        
+        .death {
+            color: #909399;
+        }
+        
+        .new-confirmed {
+            color: #ff9f40;
+        }
+        
+        .active {
+            color: #36a3ff;
+        }
+        
+        /* 中部图表区域 */
+        .charts-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .chart-wrapper {
+            background: rgba(6, 30, 93, 0.5);
+            border: 1px solid rgba(0, 199, 255, 0.3);
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .chart-title {
+            font-size: 16px;
+            color: #fff;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .chart-title span {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+        }
+        
+        .chart-half-width {
+            width: 49%;
+            height: 300px;
+        }
+        
+        .chart-full-width {
+            width: 100%;
+            height: 300px;
+        }
+        
+        .chart {
+            width: 100%;
+            height: calc(100% - 30px);
+        }
+        
+        /* 底部图表区域 */
+        .bottom-charts {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .bottom-chart {
+            width: 49%;
+            height: 250px;
+        }
+        
+        /* 响应式调整 */
+        @media screen and (max-width: 1200px) {
+            .chart-half-width, .bottom-chart {
+                width: 100%;
+            }
+            
+            .data-item {
+                width: 30%;
+                margin-bottom: 10px;
+            }
+            
+            .data-overview {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部标题和数据指标 -->
+        <div class="header">
+            <div class="title">香港疫情实时监控大屏</div>
+            <div class="data-overview">
+                <div class="data-item">
+                    <div class="data-item-title">累计确诊</div>
+                    <div class="data-item-value confirmed">12,345</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-item-title">新增确诊</div>
+                    <div class="data-item-value new-confirmed">123</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-item-title">现有确诊</div>
+                    <div class="data-item-value active">2,345</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-item-title">累计治愈</div>
+                    <div class="data-item-value cured">9,876</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-item-title">累计死亡</div>
+                    <div class="data-item-value death">124</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 中部图表区域 -->
+        <div class="charts-container">
+            <!-- 每日新增与累计确诊数据 -->
+            <div class="chart-wrapper chart-half-width">
+                <div class="chart-title">每日新增与累计确诊趋势 <span>单位: 人</span></div>
+                <div id="daily-trend" class="chart"></div>
+            </div>
+            
+            <!-- 地理分布图 -->
+            <div class="chart-wrapper chart-half-width">
+                <div class="chart-title">香港各区疫情分布 <span>单位: 人</span></div>
+                <div id="geo-distribution" class="chart"></div>
+            </div>
+            
+            <!-- 趋势分析图 -->
+            <div class="chart-wrapper chart-half-width">
+                <div class="chart-title">疫情增长率变化趋势 <span>单位: %</span></div>
+                <div id="growth-rate" class="chart"></div>
+            </div>
+            
+            <!-- 各区域确诊排名 -->
+            <div class="chart-wrapper chart-half-width">
+                <div class="chart-title">各区域确诊排名 <span>单位: 人</span></div>
+                <div id="district-ranking" class="chart"></div>
+            </div>
+        </div>
+        
+        <!-- 底部图表区域 -->
+        <div class="bottom-charts">
+            <!-- 年龄分布 -->
+            <div class="chart-wrapper bottom-chart">
+                <div class="chart-title">确诊病例年龄分布 <span>单位: 人</span></div>
+                <div id="age-distribution" class="chart"></div>
+            </div>
+            
+            <!-- 医疗资源分布 -->
+            <div class="chart-wrapper bottom-chart">
+                <div class="chart-title">医疗资源使用情况 <span>单位: %</span></div>
+                <div id="medical-resources" class="chart"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 初始化所有图表
+        document.addEventListener('DOMContentLoaded', function() {
+            // 模拟数据 - 实际项目中应从API获取
+            const mockData = {
+                dailyData: {
+                    dates: ['3/15', '3/16', '3/17', '3/18', '3/19', '3/20', '3/21', '3/22', '3/23', '3/24', '3/25'],
+                    newCases: [120, 132, 101, 134, 90, 230, 210, 120, 132, 101, 134],
+                    totalCases: [5000, 5132, 5233, 5367, 5457, 5687, 5897, 6017, 6149, 6250, 6384]
+                },
+                districts: ['中西区', '湾仔区', '东区', '南区', '油尖旺区', '深水埗区', '九龙城区', '黄大仙区', '观塘区', '葵青区', '荃湾区', '屯门区', '元朗区', '北区', '大埔区', '沙田区', '西贡区', '离岛区'],
+                districtData: [320, 302, 301, 334, 390, 330, 320, 302, 301, 334, 390, 330, 320, 302, 301, 334, 390, 330],
+                growthRates: [5.2, 4.8, 3.2, 4.5, 2.8, 7.5, 6.8, 3.9, 4.2, 3.3, 4.3],
+                ageGroups: ['0-9岁', '10-19岁', '20-29岁', '30-39岁', '40-49岁', '50-59岁', '60-69岁', '70岁以上'],
+                ageDistribution: [50, 150, 420, 380, 290, 320, 410, 580],
+                medicalResources: {
+                    categories: ['普通病床', '隔离病床', 'ICU病床', '呼吸机', '医护人员'],
+                    usage: [85, 92, 78, 65, 90]
+                }
+            };
+            
+            // 初始化每日新增与累计确诊趋势图
+            initDailyTrendChart(mockData);
+            
+            // 初始化地理分布图
+            initGeoDistributionChart(mockData);
+            
+            // 初始化增长率变化趋势图
+            initGrowthRateChart(mockData);
+            
+            // 初始化各区域确诊排名图
+            initDistrictRankingChart(mockData);
+            
+            // 初始化年龄分布图
+            initAgeDistributionChart(mockData);
+            
+            // 初始化医疗资源使用情况图
+            initMedicalResourcesChart(mockData);
+        });
+        
+        // 每日新增与累计确诊趋势图
+        function initDailyTrendChart(data) {
+            const chartDom = document.getElementById('daily-trend');
+            const myChart = echarts.init(chartDom);
+            
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                },
+                legend: {
+                    data: ['新增确诊', '累计确诊'],
+                    textStyle: {
+                        color: '#fff'
+                    },
+                    top: 0,
+                    right: 10
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: [
+                    {
+                        type: 'category',
+                        data: data.dailyData.dates,
+                        axisLine: {
+                            lineStyle: {
+                                color: 'rgba(255,255,255,0.3)'
+                            }
+                        },
+                        axisLabel: {
+                            color: 'rgba(255,255,255,0.7)'
+                        }
+                    }
+                ],
+                yAxis: [
+                    {
+                        type: 'value',
+                        name: '新增确诊',
+                        splitLine: {
+                            lineStyle: {
+                                color: 'rgba(255,255,255,0.1)'
+                            }
+                        },
+                        axisLine: {
+                            lineStyle: {
+                                color: 'rgba(255,255,255,0.3)'
+                            }
+                        },
+                        axisLabel: {
+                            color: 'rgba(255,255,255,0.7)'
+                        }
+                    },
+                    {
+                        type: 'value',
+                        name: '累计确诊',
+                        splitLine: {
+                            show: false
+                        },
+                        axisLine: {
+                            lineStyle: {
+                                color: 'rgba(255,255,255,0.3)'
+                            }
+                        },
+                        axisLabel: {
+                            color: 'rgba(255,255,255,0.7)'
+                        }
+                    }
+                ],
+                series: [
+                    {
+                        name: '新增确诊',
+                        type: 'bar',
+                        data: data.dailyData.newCases,
+                        itemStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: '#ff9f43' },
+                                { offset: 1, color: '#ff6b6b' }
+                            ])
+                        }
+                    },
+                    {
+                        name: '累计确诊',
+                        type: 'line',
+                        yAxisIndex: 1,
+                        data: data.dailyData.totalCases,
+                        symbolSize: 8,
+                        symbol: 'circle',
+                        smooth: true,
+                        lineStyle: {
+                            width: 3,
+                            color: '#36a3ff'
+                        },
+                        itemStyle: {
+                            color: '#36a3ff'
+                        }
+                    }
+                ]
+            };
+            
+            myChart.setOption(option);
+            
+            // 响应窗口大小变化
+            window.addEventListener('resize', function() {
+                myChart.resize();
+            });
+        }
+        
+        // 地理分布图
+        function initGeoDistributionChart(data) {
+            const chartDom = document.getElementById('geo-distribution');
+            const myChart = echarts.init(chartDom);
+            
+            // 准备地图数据
+            const mapData = [];
+            const districtMap = {
+                '中西区': '中西区',
+                '湾仔区': '湾仔区',
+                '东区': '东区',
+                '南区': '南区',
+                '油尖旺区': '油尖旺区',
+                '深水埗区': '深水埗区',
+                '九龙城区': '九龙城区',
+                '黄大仙区': '黄大仙区',
+                '观塘区': '观塘区',
+                '葵青区': '葵青区',
+                '荃湾区': '荃湾区',
+                '屯门区': '屯门区',
+                '元朗区': '元朗区',
+                '北区': '北区',
+                '大埔区': '大埔区',
+                '沙田区': '沙田区',
+                '西贡区': '西贡区',
+                '离岛区': '离岛区'
+            };
+            
+            // 匹配地区名称并创建地图数据
+            data.districts.forEach((district, index) => {
+                const matchedDistrict = Object.keys(districtMap).find(key => 
+                    district.includes(key) || key.includes(district)
+                );
+                
+                if (matchedDistrict) {
+                    mapData.push({
+                        name: matchedDistrict,
+                        value: data.districtData[index]
+                    });
+                } else {
+                    console.log('未匹配到地区:', district);
+                }
+            });
+            
+            // 计算最大值用于视觉映射
+            const maxValue = Math.max(...data.districtData);
+            
+            // 香港地图配置
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}<br/>确诊人数: {c}人'
+                },
+                visualMap: {
+                    min: 0,
+                    max: maxValue,
+                    left: 'right',
+                    top: 'bottom',
+                    text: ['高', '低'],
+                    calculable: true,
+                    inRange: {
+                        color: ['#50a3ba', '#eac736', '#d94e5d']
+                    },
+                    textStyle: {
+                        color: '#fff'
+                    }
+                },
+                series: [
+                    {
+                        name: '香港各区确诊人数',
+                        type: 'map',
+                        map: 'HK',
+                        roam: true, // 允许缩放和平移
+                        zoom: 1.2, // 放大一点
+                        center: [114.15, 22.35], // 中心点
+                        emphasis: {
+                            label: {
+                                show: true,
+                                color: '#fff'
+                            },
+                            itemStyle: {
+                                areaColor: '#ffd04b'
+                            }
+                        },
+                        data: mapData,
+                        itemStyle: {
+                            borderColor: 'rgba(255, 255, 255, 0.5)',
+                            borderWidth: 1
+                        },
+                        label: {
+                            show: true,
+                            color: '#fff',
+                            fontSize: 10
+                        }
+                    }
+                ]
+            };
+            
+            myChart.setOption(option);
+            
+            // 响应窗口大小变化
+            window.addEventListener('resize', function() {
+                myChart.resize();
+            });
+        }
+        
+        // 增长率变化趋势图
+        function initGrowthRateChart(data) {
+            const chartDom = document.getElementById('growth-rate');
+            const myChart = echarts.init(chartDom);
+            
+            const option = {
+                tooltip: {
+                    trigger: 'axis'
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: data.dailyData.dates,
+                    axisLine: {
+                        lineStyle: {
+                            color: 'rgba(255,255,255,0.3)'
+                        }
+                    },
+                    axisLabel: {
+                        color: 'rgba(255,255,255,0.7)'
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: '增长率(%)',
+                    splitLine: {
+                        lineStyle: {
+                            color: 'rgba(255,255,255,0.1)'
+                        }
+                    },
+                    axisLine: {
+                        lineStyle: {
+                            color: 'rgba(255,255,255,0.3)'
+                        }
+                    },
+                    axisLabel: {
+                        color: 'rgba(255,255,255,0.7)'
+                    }
+                },
+                series: [
+                    {
+                        name: '增长率',
+                        type: 'line',
+                        data: data.growthRates,
+                        smooth: true,
+                        lineStyle: {
+                            width: 3,
+                            color: '#5470c6'
+                        },
+                        areaStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: 'rgba(84,112,198,0.5)' },
+                                { offset: 1, color: 'rgba(84,112,198,0.1)' }
+                            ])
+                        },
+                        markLine: {
+                            data: [
+                                { type: 'average', name: '平均值' }
+                            ],
+                            lineStyle: {
+                                color: '#ff6b6b'
+                            },
+                            label: {
+                                color: '#fff'
+                            }
+                        }
+                    }
+                ]
+            };
+            
+            myChart.setOption(option);
+            
+            // 响应窗口大小变化
+            window.addEventListener('resize', function() {
+                myChart.resize();
+            });
+        }
+        
+        // 各区域确诊排名图
+        function initDistrictRankingChart(data) {
+            const chartDom = document.getElementById('district-ranking');
+            const myChart = echarts.init(chartDom);
+            
+            // 排序数据
+            const sortedData = data.districts.map((district, index) => {
+                return {
+                    name: district,
+                    value: data.districtData[index]
+                };
+            }).sort((a, b) => b.value - a.value);
+            
+            const sortedDistricts = sortedData.map(item => item.name);
+            const sortedValues = sortedData.map(item => item.value);
+            
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'value',
+                    splitLine: {
+                        lineStyle: {
+                            color: 'rgba(255,255,255,0.1)'
+                        }
+                    },
+                    axisLine: {
+                        lineStyle: {
+                            color: 'rgba(255,255,255,0.3)'
+                        }
+                    },
+                    axisLabel: {
+                        color: 'rgba(255,255,255,0.7)'
+                    }
+                },
+                yAxis: {
+                    type: 'category',
+                    data: sortedDistricts.slice(0, 10), // 只显示前10名
+                    axisLine: {
+                        lineStyle: {
+                            color: 'rgba(255,255,255,0.3)'
+                        }
+                    },
+                    axisLabel: {
+                        color: 'rgba(255,255,255,0.7)'
+                    }
+                },
+                series: [
+                    {
+                        name: '确诊人数',
+                        type: 'bar',
+                        data: sortedValues.slice(0, 10), // 只显示前10名
+                        itemStyle: {
+                            color: new echarts.graphic.LinearGradient(1, 0, 0, 0, [
+                                { offset: 0, color: '#83bff6' },
+                                { offset: 0.5, color: '#188df0' },
+                                { offset: 1, color: '#188df0' }
+                            ])
+                        },
+                        label: {
+                            show: true,
+                            position: 'right',
+                            color: '#fff'
+                        }
+                    }
+                ]
+            };
+            
+            myChart.setOption(option);
+            
+            // 响应窗口大小变化
+            window.addEventListener('resize', function() {
+                myChart.resize();
+            });
+        }
+        
+        // 年龄分布图
+        function initAgeDistributionChart(data) {
+            const chartDom = document.getElementById('age-distribution');
+            const myChart = echarts.init(chartDom);
+            
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}: {c}人 ({d}%)'
+                },
+                legend: {
+                    orient: 'vertical',
+                    right: 10,
+                    top: 'center',
+                    textStyle: {
+                        color: '#fff'
+                    }
+                },
+                series: [
+                    {
+                        name: '年龄分布',
+                        type: 'pie',
+                        radius: ['40%', '70%'],
+                        center: ['40%', '50%'],
+                        avoidLabelOverlap: false,
+                        itemStyle: {
+                            borderRadius: 10,
+                            borderColor: '#0f1c3c',
+                            borderWidth: 2
+                        },
+                        label: {
+                            show: false,
+                            position: 'center'
+                        },
+                        emphasis: {
+                            label: {
+                                show: true,
+                                fontSize: '18',
+                                fontWeight: 'bold',
+                                color: '#fff'
+                            }
+                        },
+                        labelLine: {
+                            show: false
+                        },
+                        data: data.ageGroups.map((age, index) => {
+                            return {
+                                name: age,
+                                value: data.ageDistribution[index]
+                            };
+                        })
+                    }
+                ]
+            };
+            
+            myChart.setOption(option);
+            
+            // 响应窗口大小变化
+            window.addEventListener('resize', function() {
+                myChart.resize();
+            });
+        }
+        
+        // 医疗资源使用情况图
+        function initMedicalResourcesChart(data) {
+            const chartDom = document.getElementById('medical-resources');
+            const myChart = echarts.init(chartDom);
+            
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    },
+                    formatter: '{b}: {c}%'
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'value',
+                    max: 100,
+                    splitLine: {
+                        lineStyle: {
+                            color: 'rgba(255,255,255,0.1)'
+                        }
+                    },
+                    axisLine: {
+                        lineStyle: {
+                            color: 'rgba(255,255,255,0.3)'
+                        }
+                    },
+                    axisLabel: {
+                        color: 'rgba(255,255,255,0.7)',
+                        formatter: '{value}%'
+                    }
+                },
+                yAxis: {
+                    type: 'category',
+                    data: data.medicalResources.categories,
+                    axisLine: {
+                        lineStyle: {
+                            color: 'rgba(255,255,255,0.3)'
+                        }
+                    },
+                    axisLabel: {
+                        color: 'rgba(255,255,255,0.7)'
+                    }
+                },
+                series: [
+                    {
+                        name: '使用率',
+                        type: 'bar',
+                        data: data.medicalResources.usage,
+                        itemStyle: {
+                            color: function(params) {
+                                // 根据数值设置不同颜色
+                                if (params.value > 90) {
+                                    return '#ff6b6b'; // 红色
+                                } else if (params.value > 70) {
+                                    return '#feca57'; // 黄色
+                                } else {
+                                    return '#1dd1a1'; // 绿色
+                                }
+                            }
+                        },
+                        label: {
+                            show: true,
+                            position: 'right',
+                            color: '#fff',
+                            formatter: '{c}%'
+                        }
+                    }
+                ]
+            };
+            
+            myChart.setOption(option);
+            
+            // 响应窗口大小变化
+            window.addEventListener('resize', function() {
+                myChart.resize();
+            });
+        }
+    </script>
+</body>
+</html> 

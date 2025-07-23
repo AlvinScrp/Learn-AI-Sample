@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三角形内反弹小球</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        
+        #container {
+            position: relative;
+            width: 600px;
+            height: 500px;
+        }
+        
+        #triangle {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 300px solid transparent;
+            border-right: 300px solid transparent;
+            border-bottom: 500px solid #4CAF50;
+        }
+        
+        #ball {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: red;
+            border-radius: 50%;
+            top: 100px;
+            left: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="triangle"></div>
+        <div id="ball"></div>
+    </div>
+
+    <script>
+        // 获取小球和容器元素
+        const ball = document.getElementById('ball');
+        const container = document.getElementById('container');
+        
+        // 设置初始位置和速度
+        let x = 300;
+        let y = 100;
+        let vx = 2;
+        let vy = 3;
+        
+        // 小球半径
+        const radius = 15;
+        
+        // 三角形顶点坐标 (假设三角形顶点为 (300,0), 左下角 (0,500), 右下角 (600,500))
+        const triangle = {
+            top: { x: 300, y: 0 },
+            left: { x: 0, y: 500 },
+            right: { x: 600, y: 500 }
+        };
+        
+        // 动画循环
+        function animate() {
+            // 更新位置
+            x += vx;
+            y += vy;
+            
+            // 检查与三角形边界的碰撞
+            // 使用点到线段的距离来检测碰撞
+            
+            // 1. 检查与左边界 (top to left) 的碰撞
+            if (distanceToLineSegment(x, y, triangle.top.x, triangle.top.y, triangle.left.x, triangle.left.y) <= radius) {
+                // 计算法向量并反射速度
+                reflectVelocity(triangle.top.x, triangle.top.y, triangle.left.x, triangle.left.y);
+            }
+            
+            // 2. 检查与右边界 (top to right) 的碰撞
+            if (distanceToLineSegment(x, y, triangle.top.x, triangle.top.y, triangle.right.x, triangle.right.y) <= radius) {
+                // 计算法向量并反射速度
+                reflectVelocity(triangle.top.x, triangle.top.y, triangle.right.x, triangle.right.y);
+            }
+            
+            // 3. 检查与底边 (left to right) 的碰撞
+            if (distanceToLineSegment(x, y, triangle.left.x, triangle.left.y, triangle.right.x, triangle.right.y) <= radius) {
+                // 计算法向量并反射速度
+                reflectVelocity(triangle.left.x, triangle.left.y, triangle.right.x, triangle.right.y);
+            }
+            
+            // 更新小球位置
+            ball.style.left = (x - radius) + 'px';
+            ball.style.top = (y - radius) + 'px';
+            
+            // 继续动画循环
+            requestAnimationFrame(animate);
+        }
+        
+        // 计算点到线段的最短距离
+        function distanceToLineSegment(px, py, x1, y1, x2, y2) {
+            const A = px - x1;
+            const B = py - y1;
+            const C = x2 - x1;
+            const D = y2 - y1;
+            
+            const dot = A * C + B * D;
+            const lenSq = C * C + D * D;
+            let param = -1;
+            
+            if (lenSq !== 0) {
+                param = dot / lenSq;
+            }
+            
+            let xx, yy;
+            
+            if (param < 0) {
+                xx = x1;
+                yy = y1;
+            } else if (param > 1) {
+                xx = x2;
+                yy = y2;
+            } else {
+                xx = x1 + param * C;
+                yy = y1 + param * D;
+            }
+            
+            const dx = px - xx;
+            const dy = py - yy;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+        
+        // 根据碰撞边反射速度
+        function reflectVelocity(x1, y1, x2, y2) {
+            // 计算边的法向量 (垂直于边的向量)
+            const nx = y2 - y1;
+            const ny = -(x2 - x1);
+            
+            // 归一化法向量
+            const length = Math.sqrt(nx * nx + ny * ny);
+            const unitNx = nx / length;
+            const unitNy = ny / length;
+            
+            // 计算入射向量在法向量上的投影
+            const dotProduct = vx * unitNx + vy * unitNy;
+            
+            // 根据反射公式计算反射速度: v' = v - 2 * (v · n) * n
+            vx = vx - 2 * dotProduct * unitNx;
+            vy = vy - 2 * dotProduct * unitNy;
+        }
+        
+        // 启动动画
+        animate();
+    </script>
+</body>
+</html>

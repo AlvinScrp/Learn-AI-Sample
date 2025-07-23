@@ -1,0 +1,21 @@
+{
+  "name": "case2-excel-merger",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Excel file merger for employee data",
+  "main": "mergeExcel.js",
+  "scripts": {
+    "start": "node mergeExcel.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  },
+  "keywords": [
+    "excel",
+    "merge",
+    "xlsx"
+  ],
+  "author": "",
+  "license": "ISC"
+}
