@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>决策树续保预测模型 - 无归一化处理</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+        .content {
+            padding: 30px;
+        }
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border-radius: 8px;
+            background: #fafafa;
+            border-left: 4px solid #667eea;
+        }
+        .section h2 {
+            color: #333;
+            margin-top: 0;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .tree-container {
+            width: 100%;
+            height: 800px;
+            overflow: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+        }
+        .insights {
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .insights h3 {
+            color: #2c5aa0;
+            margin-top: 0;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        .tree-node {
+            fill: #fff;
+            stroke: #333;
+            stroke-width: 2px;
+        }
+        .tree-node-leaf {
+            fill: #e8f5e8;
+            stroke: #4CAF50;
+        }
+        .tree-node-internal {
+            fill: #e3f2fd;
+            stroke: #2196F3;
+        }
+        .tree-link {
+            fill: none;
+            stroke: #666;
+            stroke-width: 2px;
+        }
+        .node-text {
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .link-text {
+            font-size: 10px;
+            fill: #666;
+        }
+        .customer-groups {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .group-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .group-card h3 {
+            color: #333;
+            margin-top: 0;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .group-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-left: 3px solid #667eea;
+        }
+        .renewal-rate {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .non-renewal-rate {
+            font-weight: bold;
+            color: #F44336;
+        }
+        .feature-importance {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .feature-importance h3 {
+            color: #856404;
+            margin-top: 0;
+        }
+        .feature-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            border-left: 3px solid #ffc107;
+        }
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>决策树续保预测模型</h1>
+            <p>基于决策树算法的客户续保预测分析 (无归一化处理)</p>
+        </div>
+        
+        <div class="content">
+            <div class="section">
+                <h2>📊 模型概览</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">91.70%</div>
+                        <div class="stat-label">准确率</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">96.42%</div>
+                        <div class="stat-label">精确率</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">93.21%</div>
+                        <div class="stat-label">召回率</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">94.79%</div>
+                        <div class="stat-label">F1分数</div>
+                    </div>
+                </div>
+                
+                <div class="insights">
+                    <h3>模型特点</h3>
+                    <ul>
+                        <li><strong>无归一化处理</strong>: 使用原始特征值，保持业务含义</li>
+                        <li><strong>最大深度</strong>: 3层，避免过拟合</li>
+                        <li><strong>分割标准</strong>: 基尼不纯度</li>
+                        <li><strong>特征数量</strong>: 10个原始特征</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>🌳 决策树结构</h2>
+                <div class="code-block">
+├─ 年龄 ≤ 29.50 (1000样本)
+│  ├─ 婚姻状况 ≤ 1.50 (222样本)
+│  │  ├─ 理赔历史 ≤ 0.50 (112样本)
+│  │  │  ├─ 预测: 不续保 (92样本, 续保率: 9.8%)
+│  │  │  └─ 预测: 不续保 (20样本, 续保率: 45.0%)
+│  │  └─ 职业 ≤ 2.50 (110样本)
+│  │     ├─ 预测: 不续保 (23样本, 续保率: 30.4%)
+│  │     └─ 预测: 续保 (87样本, 续保率: 87.4%)
+│  └─ 年龄 ≤ 60.50 (778样本)
+│     ├─ 职业 ≤ 2.50 (595样本)
+│     │  ├─ 预测: 续保 (129样本, 续保率: 93.0%)
+│     │  └─ 预测: 续保 (466样本, 续保率: 100.0%)
+│     └─ 婚姻状况 ≤ 1.50 (183样本)
+│        ├─ 预测: 不续保 (82样本, 续保率: 36.6%)
+│        └─ 预测: 续保 (101样本, 续保率: 92.1%)
+                </div>
+                
+                <div class="tree-container" id="treeContainer">
+                    <svg id="treeSVG" width="1200" height="800"></svg>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>📋 客户群体分析</h2>
+                <div class="customer-groups">
+                    <div class="group-card">
+                        <h3>🎯 愿意续保的客户群体</h3>
+                        <div class="group-item">
+                            <strong>中年高职业客户</strong>
+                            <div class="renewal-rate">续保率: 100% (466人)</div>
+                            <div>年龄: 30-60岁, 职业: 医生、律师、工程师等</div>
+                            <div>特征: 收入稳定、风险意识强、支付能力强</div>
+                        </div>
+                        <div class="group-item">
+                            <strong>中年低职业客户</strong>
+                            <div class="renewal-rate">续保率: 93.0% (129人)</div>
+                            <div>年龄: 30-60岁, 职业: 经理、销售、设计师等</div>
+                            <div>特征: 年龄成熟、有一定经济基础、家庭责任重</div>
+                        </div>
+                        <div class="group-item">
+                            <strong>老年已婚客户</strong>
+                            <div class="renewal-rate">续保率: 92.1% (101人)</div>
+                            <div>年龄: 60岁以上, 已婚</div>
+                            <div>特征: 健康风险高、家庭责任感强、保险需求强烈</div>
+                        </div>
+                        <div class="group-item">
+                            <strong>年轻已婚高职业客户</strong>
+                            <div class="renewal-rate">续保率: 87.4% (87人)</div>
+                            <div>年龄: 29.5岁以下, 已婚, 高职业等级</div>
+                            <div>特征: 家庭责任感强、收入稳定、风险意识较强</div>
+                        </div>
+                    </div>
+                    
+                    <div class="group-card">
+                        <h3>⚠️ 不愿意续保的客户群体</h3>
+                        <div class="group-item">
+                            <strong>年轻单身无理赔客户</strong>
+                            <div class="non-renewal-rate">续保率: 9.8% (92人)</div>
+                            <div>年龄: 29.5岁以下, 单身, 无理赔记录</div>
+                            <div>特征: 风险意识低、家庭责任轻、对保险价值认知不足</div>
+                        </div>
+                        <div class="group-item">
+                            <strong>年轻已婚低职业客户</strong>
+                            <div class="non-renewal-rate">续保率: 30.4% (23人)</div>
+                            <div>年龄: 29.5岁以下, 已婚, 低职业等级</div>
+                            <div>特征: 收入有限、经济压力大、年轻</div>
+                        </div>
+                        <div class="group-item">
+                            <strong>老年单身客户</strong>
+                            <div class="non-renewal-rate">续保率: 36.6% (82人)</div>
+                            <div>年龄: 60岁以上, 单身</div>
+                            <div>特征: 家庭责任轻、可能经济条件有限</div>
+                        </div>
+                        <div class="group-item">
+                            <strong>年轻单身有理赔客户</strong>
+                            <div class="non-renewal-rate">续保率: 45.0% (20人)</div>
+                            <div>年龄: 29.5岁以下, 单身, 有理赔记录</div>
+                            <div>特征: 有理赔体验但风险意识相对较低</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>💡 关键影响因素</h2>
+                <div class="feature-importance">
+                    <h3>最重要的决策因素 (按重要性排序)</h3>
+                    <div class="feature-item">
+                        <strong>1. 年龄因素</strong>
+                        <div>• 29.5岁是关键分界点</div>
+                        <div>• 年龄越大，续保概率越高</div>
+                        <div>• 年龄反映风险意识和经济能力</div>
+                    </div>
+                    <div class="feature-item">
+                        <strong>2. 婚姻状况因素</strong>
+                        <div>• 已婚客户续保概率显著高于单身/离异客户</div>
+                        <div>• 已婚客户家庭责任感更强</div>
+                        <div>• 已婚客户对家庭保障需求更大</div>
+                    </div>
+                    <div class="feature-item">
+                        <strong>3. 职业等级因素</strong>
+                        <div>• 高职业等级客户续保概率更高</div>
+                        <div>• 高职业客户收入更稳定</div>
+                        <div>• 高职业客户风险意识更强</div>
+                    </div>
+                    <div class="feature-item">
+                        <strong>4. 理赔历史因素</strong>
+                        <div>• 有理赔历史的客户续保概率更高</div>
+                        <div>• 理赔体验增强客户对保险价值的认知</div>
+                        <div>• 理赔体验影响客户对保险公司的信任</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>🎯 业务策略建议</h2>
+                <div class="insights">
+                    <h3>针对高续保概率客户 (续保率 > 80%)</h3>
+                    <ul>
+                        <li><strong>中年高职业客户</strong>: 提供高端保险产品，重点维护，VIP服务</li>
+                        <li><strong>中年低职业客户</strong>: 提供标准保险产品，稳定服务，保持满意度</li>
+                        <li><strong>老年已婚客户</strong>: 提供健康保险产品，健康管理服务</li>
+                        <li><strong>年轻已婚高职业客户</strong>: 提供家庭保险套餐，家庭保障服务</li>
+                    </ul>
+                    
+                    <h3>针对低续保概率客户 (续保率 < 50%)</h3>
+                    <ul>
+                        <li><strong>年轻单身无理赔客户</strong>: 设计适合年轻人的保险产品，加强客户教育</li>
+                        <li><strong>年轻已婚低职业客户</strong>: 提供经济型保险产品，提高性价比</li>
+                        <li><strong>老年单身客户</strong>: 提供个性化健康保险，个性化服务</li>
+                        <li><strong>年轻单身有理赔客户</strong>: 基于理赔体验设计产品，加强理赔服务</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>📈 无归一化处理的优势</h2>
+                <div class="insights">
+                    <h3>为什么选择无归一化处理？</h3>
+                    <ul>
+                        <li><strong>保持原始特征含义</strong>: 决策阈值具有实际业务意义</li>
+                        <li><strong>易于解释</strong>: 年龄29.5岁、职业等级2.5等阈值直观易懂</li>
+                        <li><strong>业务友好</strong>: 决策规则符合业务逻辑</li>
+                        <li><strong>计算效率高</strong>: 无需额外的归一化计算</li>
+                        <li><strong>保持数据真实性</strong>: 不改变原始数据的分布特征</li>
+                    </ul>
+                    
+                    <h3>关键阈值解释</h3>
+                    <ul>
+                        <li><strong>年龄 ≤ 29.50</strong>: 29.5岁是年轻与成熟的分界点</li>
+                        <li><strong>年龄 ≤ 60.50</strong>: 60.5岁是中年与老年的分界点</li>
+                        <li><strong>婚姻状况 ≤ 1.50</strong>: 区分单身/离异与已婚客户</li>
+                        <li><strong>职业 ≤ 2.50</strong>: 区分低职业等级与高职业等级</li>
+                        <li><strong>理赔历史 ≤ 0.50</strong>: 区分有无理赔体验</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 决策树数据
+        const treeData = {
+            name: "年龄 ≤ 29.50",
+            children: [
+                {
+                    name: "婚姻状况 ≤ 1.50",
+                    children: [
+                        {
+                            name: "理赔历史 ≤ 0.50",
+                            children: [
+                                { name: "预测: 不续保 (9.8%)" },
+                                { name: "预测: 不续保 (45.0%)" }
+                            ]
+                        },
+                        {
+                            name: "职业 ≤ 2.50",
+                            children: [
+                                { name: "预测: 不续保 (30.4%)" },
+                                { name: "预测: 续保 (87.4%)" }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    name: "年龄 ≤ 60.50",
+                    children: [
+                        {
+                            name: "职业 ≤ 2.50",
+                            children: [
+                                { name: "预测: 续保 (93.0%)" },
+                                { name: "预测: 续保 (100.0%)" }
+                            ]
+                        },
+                        {
+                            name: "婚姻状况 ≤ 1.50",
+                            children: [
+                                { name: "预测: 不续保 (36.6%)" },
+                                { name: "预测: 续保 (92.1%)" }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
+        
+        // 设置SVG
+        const svg = d3.select("#treeSVG");
+        const width = 1200;
+        const height = 800;
+        
+        // 创建树布局
+        const tree = d3.tree().size([height - 100, width - 200]);
+        const root = d3.hierarchy(treeData);
+        tree(root);
+        
+        // 绘制连接线
+        svg.selectAll(".link")
+            .data(root.links())
+            .enter().append("path")
+            .attr("class", "tree-link")
+            .attr("d", d3.linkHorizontal()
+                .x(d => d.y)
+                .y(d => d.x));
+        
+        // 绘制节点
+        const nodes = svg.selectAll(".node")
+            .data(root.descendants())
+            .enter().append("g")
+            .attr("class", "node")
+            .attr("transform", d => "translate(" + d.y + "," + d.x + ")");
+        
+        // 添加节点圆圈
+        nodes.append("circle")
+            .attr("r", 8)
+            .attr("class", d => d.children ? "tree-node tree-node-internal" : "tree-node tree-node-leaf");
+        
+        // 添加节点文本
+        nodes.append("text")
+            .attr("dy", "0.35em")
+            .attr("x", d => d.children ? -12 : 12)
+            .attr("text-anchor", d => d.children ? "end" : "start")
+            .attr("class", "node-text")
+            .text(d => d.data.name);
+        
+        // 添加连接线标签
+        svg.selectAll(".link-label")
+            .data(root.links())
+            .enter().append("text")
+            .attr("class", "link-text")
+            .attr("transform", d => {
+                const midPoint = {
+                    x: (d.source.x + d.target.x) / 2,
+                    y: (d.source.y + d.target.y) / 2
+                };
+                return "translate(" + midPoint.y + "," + midPoint.x + ")";
+            })
+            .text(d => d.data.condition || "");
+    </script>
+</body>
+</html> 

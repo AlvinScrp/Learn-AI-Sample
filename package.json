@@ -8,14 +8,23 @@
     "start": "node index.js",
     "dev": "node --watch index.js"
   },
-  "keywords": ["openai", "ai", "chat", "nodejs"],
+  "keywords": [
+    "openai",
+    "ai",
+    "chat",
+    "nodejs"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "dotenv": "^16.3.1",
+    "ml-cart": "^2.1.1",
+    "ml-logistic-regression": "^2.0.0",
+    "ml-matrix": "^6.12.1",
     "openai": "^4.20.1",
-    "dotenv": "^16.3.1"
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
   }
-} 
+}

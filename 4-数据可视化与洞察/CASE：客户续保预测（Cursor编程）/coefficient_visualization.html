@@ -1,0 +1,271 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>逻辑回归系数可视化</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+        .content {
+            padding: 30px;
+        }
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border-radius: 8px;
+            background: #fafafa;
+            border-left: 4px solid #667eea;
+        }
+        .section h2 {
+            color: #333;
+            margin-top: 0;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .chart-container {
+            position: relative;
+            height: 600px;
+            margin: 20px 0;
+        }
+        .insights {
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .insights h3 {
+            color: #2c5aa0;
+            margin-top: 0;
+        }
+        .coefficient-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .coefficient-table th,
+        .coefficient-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .coefficient-table th {
+            background-color: #667eea;
+            color: white;
+        }
+        .coefficient-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .positive {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .negative {
+            color: #F44336;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>逻辑回归系数分析</h1>
+            <p>续保预测模型特征重要性可视化</p>
+        </div>
+        
+        <div class="content">
+            <div class="section">
+                <h2>📊 特征系数分析</h2>
+                <div class="chart-container">
+                    <canvas id="coefficientChart"></canvas>
+                </div>
+                
+                <div class="insights">
+                    <h3>系数解释</h3>
+                    <ul>
+                        <li><strong>正系数</strong>: 该特征增加时，续保概率增加</li>
+                        <li><strong>负系数</strong>: 该特征增加时，续保概率减少</li>
+                        <li><strong>系数绝对值越大</strong>: 该特征对续保预测的影响越大</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>📋 详细系数表</h2>
+                <table class="coefficient-table">
+                    <thead>
+                        <tr>
+                            <th>特征名称</th>
+                            <th>系数值</th>
+                            <th>影响方向</th>
+                            <th>重要性</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                                <tr>
+                                    <td>年龄(标准化)</td>
+                                    <td class="positive">0.2575</td>
+                                    <td>正影响</td>
+                                    <td>0.2575</td>
+                                </tr>
+                            
+                                <tr>
+                                    <td>家庭成员数(标准化)</td>
+                                    <td class="positive">0.4464</td>
+                                    <td>正影响</td>
+                                    <td>0.4464</td>
+                                </tr>
+                            
+                                <tr>
+                                    <td>保费金额(标准化)</td>
+                                    <td class="negative">-0.0006</td>
+                                    <td>负影响</td>
+                                    <td>0.0006</td>
+                                </tr>
+                            
+                                <tr>
+                                    <td>性别(男=1)</td>
+                                    <td class="negative">-0.2111</td>
+                                    <td>负影响</td>
+                                    <td>0.2111</td>
+                                </tr>
+                            
+                                <tr>
+                                    <td>收入水平</td>
+                                    <td class="positive">0.3618</td>
+                                    <td>正影响</td>
+                                    <td>0.3618</td>
+                                </tr>
+                            
+                                <tr>
+                                    <td>教育水平</td>
+                                    <td class="positive">0.1646</td>
+                                    <td>正影响</td>
+                                    <td>0.1646</td>
+                                </tr>
+                            
+                                <tr>
+                                    <td>婚姻状况</td>
+                                    <td class="positive">0.4785</td>
+                                    <td>正影响</td>
+                                    <td>0.4785</td>
+                                </tr>
+                            
+                                <tr>
+                                    <td>理赔历史</td>
+                                    <td class="positive">0.1219</td>
+                                    <td>正影响</td>
+                                    <td>0.1219</td>
+                                </tr>
+                            
+                                <tr>
+                                    <td>保单期限</td>
+                                    <td class="positive">0.0321</td>
+                                    <td>正影响</td>
+                                    <td>0.0321</td>
+                                </tr>
+                            
+                                <tr>
+                                    <td>职业</td>
+                                    <td class="positive">0.1609</td>
+                                    <td>正影响</td>
+                                    <td>0.1609</td>
+                                </tr>
+                            
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="section">
+                <h2>💡 业务洞察</h2>
+                <div class="insights">
+                    <h3>关键发现</h3>
+                    <ul>
+                        <li><strong>最重要的正面因素</strong>: 婚姻状况 (0.4785)</li>
+                        <li><strong>最重要的负面因素</strong>: 性别(男=1) (-0.2111)</li>
+                        <li><strong>模型可解释性</strong>: 逻辑回归模型提供了清晰的特征重要性排序</li>
+                    </ul>
+                    
+                    <h3>业务建议</h3>
+                    <ul>
+                        <li><strong>重点关注</strong>: 加强正面影响因素的营销策略</li>
+                        <li><strong>风险控制</strong>: 针对负面影响因素制定预防措施</li>
+                        <li><strong>产品优化</strong>: 根据特征重要性调整产品设计</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('coefficientChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ["年龄(标准化)","家庭成员数(标准化)","保费金额(标准化)","性别(男=1)","收入水平","教育水平","婚姻状况","理赔历史","保单期限","职业"],
+                datasets: [{
+                    label: '系数值',
+                    data: [0.25750456816754275,0.44643097427348294,-0.0006241131697809817,-0.2111153489146198,0.36182666719687623,0.1646098545718332,0.47847442609140756,0.12188836562723,0.032124852751841,0.16089503600369714],
+                    backgroundColor: ["#4CAF50","#4CAF50","#F44336","#F44336","#4CAF50","#4CAF50","#4CAF50","#4CAF50","#4CAF50","#4CAF50"],
+                    borderColor: ["#388E3C","#388E3C","#D32F2F","#D32F2F","#388E3C","#388E3C","#388E3C","#388E3C","#388E3C","#388E3C"],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#ddd'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return '系数: ' + context.parsed.y.toFixed(4);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
