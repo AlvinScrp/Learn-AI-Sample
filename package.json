@@ -17,12 +17,16 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@tensorflow/tfjs-node": "^4.22.0",
     "csv-parser": "^3.2.0",
     "dotenv": "^16.3.1",
+    "jieba": "^1.0.0",
     "ml-cart": "^2.1.1",
     "ml-logistic-regression": "^2.0.0",
     "ml-matrix": "^6.12.1",
+    "nodejieba": "^3.5.0",
     "openai": "^4.20.1",
+    "word2vec": "^1.1.5",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

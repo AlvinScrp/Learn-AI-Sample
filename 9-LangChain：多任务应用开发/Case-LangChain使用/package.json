@@ -1,0 +1,28 @@
+{
+  "name": "langchain-product-llm",
+  "version": "1.0.0",
+  "description": "LangChain Agent 产品查询系统 - JavaScript 版本",
+  "type": "module",
+  "main": "5-product_llm.js",
+  "scripts": {
+    "start": "node 5-product_llm.js",
+    "start:equivalent": "node 5-product_llm_equivalent.js",
+    "dev": "node --watch 5-product_llm.js",
+    "dev:equivalent": "node --watch 5-product_llm_equivalent.js"
+  },
+  "dependencies": {
+    "@langchain/community": "^0.0.20",
+    "@langchain/core": "^0.1.0",
+    "@langchain/openai": "^0.0.14",
+    "langchain": "^0.1.0"
+  },
+  "keywords": [
+    "langchain",
+    "agent",
+    "llm",
+    "tesla",
+    "product-query"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+} 

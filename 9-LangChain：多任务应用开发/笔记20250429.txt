@@ -1,0 +1,152 @@
+https://serpapi.com/
+
+哪些场景会用到 serpapi
+1）实时了解目前发生的新闻
+2）互联网上的页面的信息
+其他Tools，也有一定定义好的
+
+这个tools没有描述，是因为这个工具是在Agent中已经存在了描述
+
+Thinking：langchain 调用这些 tools 和现在大火的 agent 调用 mcp 服务有什么不同
+
+tools一般是自己来定义的。
+mcp是一个接口的标准协议，更方便的调用tools
+
+Thinking：memory和llm上下文有什么区别呢
+作用是一样的，memory是对llm上下文做了一些管理
+1）BufferMemory：完整的上下文
+2）如果不是完整的上下文
+最近的K组对话存储下来，传给LLM
+对对话进行摘要，
+根据用户的输入信息，匹配向量数据库中最相似的K组对话
+
+目前最推荐的向量数据库是哪个？
+Chromadb，在本地的一个向量数据库，轻量级
+faiss，
+
+LangChain = LLM application
+Dashscope 保存了很多LLM的调用API
+
+Thinking：工具的内容回复是比较匹配的。类似数据库查询？这里的数据换成向量数据库或者换成知识库，就可以更加智能？
+是的，可以换成向量数据库进行匹配
+
+Thinking：这个工具就是function calling吗？
+是的
+
+
+工具是LLM执行的吗？不是Agent执行的吗？
+Agent是智能体，我们会给Agent配置各种tool, memory, prompt, LLM
+LLM是Agent的大脑，Agent如果要决定使用哪个工具，是通过LLM来进行推理。
+
+
+如何在LangChain中自定义工具
+1）在tools中添加我们的Tool
+    tools = [
+        Tool(
+            name="查询产品名称",
+            func=tesla_data_source.find_product_description,
+            description="通过产品名称找到产品描述时用的工具，输入的是产品名称",
+        ),
+        Tool(
+            name="公司相关信息",
+            func=tesla_data_source.find_company_info,
+            description="当用户询问公司相关的问题，可以通过这个工具了解公司信息",
+        ),
+    ]
+2) 实现该tool的函数
+find_product_description
+
+tools在langchain中，你可以自己定义自己的tool，也可以使用langchain已经集成好的tool
+
+用户的query + tools description => 来决定使用哪个Tool
+http://reverie.herokuapp.com/arXiv_Demo/#
+
+Thinking：循环到什么程度AI才认为答案可以给用户了？
+AI: 我现在能直接回答用户的问题了么？
+还是我需要调用工具，来得到更多的观察？
+
+Cursor，Agent模式，
+用户给你需求 => Agent不断思考，调用tool来满足用户需求；
+
+Thinking：LLM选择工具也是用相似度来选择的吗？
+就是通过LLM的prompt进行提问，来选择的
+用户的需求是XXX
+我现在有XXX工具，
+如果需要，我可以选择其中一个工具来执行；
+（是通过LLM的推理来完成的）
+
+Thinking：老师如果是同样功能的function 大模型会自己选择吗
+
+qwen-turbo的费用：
+1）input 2元/100万token
+2) output 6元/100万token
+
+Thinking：工具多了，会不会很卡，太卡就没有意义了
+工具多了 => 可以选择的tool很多，但是每次执行可以只用一个适合的
+
+Thinking：有没有评估的大模型，先让它做同类功能的fuction的评估择优最后，再选用
+LLM会自动来判断，用哪个工具
+Qwen3, 36T数据，其中也有一些是关于工具使用的训练；
+input: 你是一个有用的AI助手，可以使用以下工具:
+{tools}
+可用工具名称: {tool_names}
+
+output：
+21点32分回来；
+
+
+Thinking：之前看过一个观点 说1个agent最好就5个左右的工具 上限是20个 要不效果会很差 是这样吗？？
+工具多了，会存在干扰。
+但是也存在更多的能力。
+工具之间如果没有什么交集，放进去，对大模型来说就是能力的增强（提供更多的可能性）
+
+可以问问，工具放的越来越多后每次掉用模型时的tokens会消费很多，有什么办法能降低tokens使用量的方法
+LLM通常回答问题，会把memory（上下文）放进去，这个会消耗更多的token
+
+query
+tool description embedding 
+
+create_react_agent: 需要在提示词中，指明 {tools} 和 {tool_names}
+
+ZERO_SHOT_REACT_DESCRIPTION
+qwen-agent
+tool, mcp server
+
+实现RAG功能，必须要用langchain吗？
+还可以使用 langgraph, qwen-agent, coze, dify
+
+
+如果本地化部署，自己写代码的话，是不是用一个langchain就够了
+langchain/langgraph, qwen-agent, dify
+
+有什么好的适合本地部署的embedding开源模型吗？
+bge-m3
+https://modelscope.cn/models/BAAI/bge-m3/files
+
+Thinking：可以提前把前端提问框架说一下吗，或者发一下部署学习资料
+1) qwen-agent 集成了gui，可以有本地可视化的界面
+pip install -e ./"[gui,rag,code_interpreter,mcp]"
+2) https://github.com/Dooy/chatgpt-web-midjourney-proxy
+
+后端我是自己写的flask server
+https://github.com/VariantConst/OpenWebUI-Monitor
+
+怎么将github别人做的前端界面，改成自己的？
+下载下来，部署，然后替换（使用Cursor）
+
+前端跟后端怎么连接，有什么部署文档吗
+github上一个前端chat的UI，
+后端我用的flask server
+
+
+
+
+
+
+
+
+
+
+
+
+

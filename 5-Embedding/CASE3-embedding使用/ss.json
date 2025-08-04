@@ -1,0 +1,92 @@
+
+{
+    "list": [
+        {
+            "uuid": "175384741646879qiHcsAAr",
+            "type": 2,
+            "isSelected": true,
+            "disabled": false,
+            "timeInfo": "",
+            "timeStamp": "",
+            "materialId": 12733,
+            "materialIdSource": "groupMaterial",
+            "headImage": "https:\/\/cdn.webuy.ai\/base-service-webserver\/60937579\/assets\/img\/2024\/12\/04\/c7bbd873-1170-4a62-8841-0aea63e94b81__563KB____size1024x1024.png?x-oss-process=image\/resize,w_120,x-oss-process=image\/format,png\/interlace,1",
+            "userNick": "官方",
+            "pmUserId": null,
+            "textContent": null,
+            "imgContent": {
+                "imgUrl": "https:\/\/hcdn.haoyiku.cc\/app-301\/293\/assets\/img\/2025\/07\/29\/6fb9d0fb-bfc3-405a-b865-31446356155c__179KB____size1080x1920.jpg",
+                "compressImgUrl": "https:\/\/hcdn.haoyiku.cc\/app-301\/293\/assets\/img\/2025\/07\/29\/6fb9d0fb-bfc3-405a-b865-31446356155c__179KB____size1080x1920.jpg?x-oss-process=image\/resize,w_480,x-oss-process=image\/format,jpg\/interlace,1"
+            },
+            "videoContent": null,
+            "posterContent": null,
+            "cardContent": null,
+            "serverJsonParams": "{\"materialId\":12733,\"materialIdSource\":\"groupMaterial\"}"
+        },
+        {
+            "uuid": "1753847416469eop2I8vtIv",
+            "type": 1001,
+            "isSelected": true,
+            "disabled": false,
+            "timeInfo": "",
+            "timeStamp": "",
+            "materialId": 12733,
+            "materialIdSource": "groupMaterial",
+            "headImage": "https:\/\/cdn.webuy.ai\/base-service-webserver\/60937579\/assets\/img\/2024\/12\/04\/c7bbd873-1170-4a62-8841-0aea63e94b81__563KB____size1024x1024.png?x-oss-process=image\/resize,w_120,x-oss-process=image\/format,png\/interlace,1",
+            "userNick": "官方",
+            "pmUserId": null,
+            "textContent": null,
+            "imgContent": null,
+            "videoContent": null,
+            "posterContent": null,
+            "cardContent": {
+                "title": "tester'brand【全场最低¥8起】",
+                "image": "https:\/\/hcdn.haoyiku.cc\/base-service-webserver\/2222243054132\/assets\/img\/2024\/03\/11\/7202551c-2f64-43bc-a69a-045c35bc24e8__30KB____size600x600.jpeg",
+                "desc": "",
+                "router": "pages\/newIndex\/newIndex",
+                "paramJson": "",
+                "posterLinkId": "100350426",
+                "posterType": 101,
+                "posterTempletType": 91,
+                "cardType": 1001,
+                "cardTempletType": 91,
+                "salesStatus": 1,
+                "jumpPageRouter": "haoyiku:\/\/Exhibition\/module?target=gotoExhibition&params=%7B%22exhibitionId%22%3A100350426%7D",
+                "originalId": ""
+            },
+            "serverJsonParams": "{\"materialId\":12733,\"materialIdSource\":\"groupMaterial\"}"
+        },
+        {
+            "uuid": "1753847416469xtDkRVvzQe",
+            "type": 107,
+            "isSelected": true,
+            "disabled": false,
+            "timeInfo": "",
+            "timeStamp": "",
+            "materialId": 12733,
+            "materialIdSource": "groupMaterial",
+            "headImage": "https:\/\/cdn.webuy.ai\/base-service-webserver\/60937579\/assets\/img\/2024\/12\/04\/c7bbd873-1170-4a62-8841-0aea63e94b81__563KB____size1024x1024.png?x-oss-process=image\/resize,w_120,x-oss-process=image\/format,png\/interlace,1",
+            "userNick": "官方",
+            "pmUserId": null,
+            "textContent": null,
+            "imgContent": null,
+            "videoContent": null,
+            "posterContent": {
+                "posterUrl": "https:\/\/hcdn.haoyiku.cc\/share\/assets\/img\/2025\/07\/30\/17538469285529280ba126f5458a0a1826ab05549c61c___size_1080x1872.jpg?trackShareId=175384692834341125251",
+                "posterLinkId": "0",
+                "posterType": 107,
+                "posterTempletType": 182,
+                "cardType": "",
+                "cardTempletType": "",
+                "paramJson": "{\"cUserId\":5251,\"convert\":true,\"lifeCircle\":\"FOREVER\",\"needMiniProgramCard\":true,\"postBurialPoint\":true,\"replaceImg\":\"https:\/\/cdn.webuy.ai\/app-301\/5251\/assets\/img\/2025\/07\/30\/66f549ea-921e-4593-a2be-77d7a5c6467c__553KB____size1080x1872.jpeg\",\"shareSource\":0,\"shareType\":182,\"shopId\":112,\"singleGoods\":false,\"sourceTrackShareId\":\"175384377737923712222243053604\",\"wxRobot\":true}",
+                "posterGraffInfo": {
+                    "qrCodeUrl": "https:\/\/p.daily.shono.cn\/Pv0fRt",
+                    "hasGraff": true,
+                    "originPosterUrl": "app-301\/5251\/assets\/img\/2025\/07\/30\/66f549ea-921e-4593-a2be-77d7a5c6467c__553KB____size1080x1872.jpeg"
+                }
+            },
+            "cardContent": null,
+            "serverJsonParams": "{\"materialId\":12733,\"materialIdSource\":\"groupMaterial\"}"
+        }
+    ]
+}

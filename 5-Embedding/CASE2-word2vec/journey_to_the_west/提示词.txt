@@ -1,0 +1,20 @@
+实现一个js程序，
+
+数据集：西游记
+• journey_to_the_west.txt
+• 计算小说中的人物相似度，比如孙悟空与猪八戒，孙悟空与孙行者
+
+方案步骤：
+• Step1，使用分词工具进行分词，比如NLTK,JIEBA
+• Step2，将训练语料转化成一个sentence的迭代器
+• Step3，使用word2vec进行训练
+• Step4，计算两个单词的相似度
+
+要求：
+- 中间过程的输出 放在output文件夹
+- 程序支持多次运行,如果前置步骤的结果已经有了,例如model.txt,此步骤就不需要重复运行
+
+技术方案：
+- NodesJs esmodule方式依赖。 
+- package.json 已经存在于Learn-AI-Sample 这个外层目录中
+
